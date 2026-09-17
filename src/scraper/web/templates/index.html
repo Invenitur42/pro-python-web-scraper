@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pro Python Web Scraper</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2e3b;
+      --text: #e4e6ed;
+      --muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    input[type="url"],
+    input[type="text"],
+    select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1fr auto;
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
+      align-items: end;
+    }
+
+    .field-row input {
+      font-size: 0.875rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.85rem;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid transparent;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .btn-danger:hover { border-color: var(--danger); }
+
+    .section { margin-bottom: 1.5rem; }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.12);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status.loading {
+      display: block;
+      background: rgba(99, 102, 241, 0.12);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 600px) {
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Pro Python Web Scraper</h1>
+      <p>Paste a URL → define the fields you want → download CSV / JSON / Parquet</p>
+    </header>
+
+    <div class="card">
+      <form id="scrape-form">
+        <!-- URL -->
+        <div class="section">
+          <label for="url">Page URL</label>
+          <input type="url" id="url" name="url" required
+                 placeholder="https://quotes.toscrape.com"
+                 value="https://quotes.toscrape.com" />
+        </div>
+
+        <!-- Item selector (optional) -->
+        <div class="section">
+          <label for="item_selector">Repeating item selector <span style="font-weight:400">(optional)</span></label>
+          <input type="text" id="item_selector" name="item_selector"
+                 placeholder="e.g. div.quote  or  article.product" />
+          <p class="hint">CSS selector for each repeating block on the page. Leave empty to treat the whole page as one item.</p>
+        </div>
+
+        <!-- Fields -->
+        <div class="section">
+          <label>Fields to extract</label>
+          <div id="fields-container">
+            <!-- rows injected by JS -->
+          </div>
+          <button type="button" class="btn btn-ghost" id="add-field" style="margin-top:0.5rem">
+            + Add field
+          </button>
+          <p class="hint" style="margin-top:0.6rem">
+            Use CSS selectors. Leave “Attribute” empty to get text content.
+            Example: name=<code>quote</code>, selector=<code>span.text</code>
+          </p>
+        </div>
+
+        <!-- Format -->
+        <div class="section">
+          <label for="format">Output format</label>
+          <select id="format" name="format">
+            <option value="csv" selected>CSV</option>
+            <option value="json">JSON</option>
+            <option value="parquet">Parquet</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submit-btn">
+          Scrape &amp; Download
+        </button>
+      </form>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <footer>
+      Explicit selectors · No magic · Built for intermediate / advanced use
+    </footer>
+  </div>
+
+  <script>
+    const fieldsContainer = document.getElementById("fields-container");
+    const addBtn = document.getElementById("add-field");
+    const form = document.getElementById("scrape-form");
+    const statusEl = document.getElementById("status");
+    const submitBtn = document.getElementById("submit-btn");
+
+    // Default example fields for quotes.toscrape.com
+    const defaultFields = [
+      { name: "text", selector: "span.text", attribute: "" },
+      { name: "author", selector: "small.author", attribute: "" },
+      { name: "tags", selector: "div.tags a.tag", attribute: "" },
+    ];
+
+    function createFieldRow(data = { name: "", selector: "", attribute: "" }) {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      row.innerHTML = `
+        <div>
+          <input type="text" placeholder="Column name" class="field-name" value="${data.name}" required />
+        </div>
+        <div>
+          <input type="text" placeholder="CSS selector" class="field-selector" value="${data.selector}" required />
+        </div>
+        <div>
+          <input type="text" placeholder="Attribute (optional)" class="field-attr" value="${data.attribute || ""}" />
+        </div>
+        <button type="button" class="btn btn-danger remove-field" title="Remove">✕</button>
+      `;
+      row.querySelector(".remove-field").addEventListener("click", () => row.remove());
+      fieldsContainer.appendChild(row);
+    }
+
+    // Seed with defaults
+    defaultFields.forEach(createFieldRow);
+
+    addBtn.addEventListener("click", () => createFieldRow());
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      statusEl.className = "status loading";
+      statusEl.textContent = "Scraping… please wait";
+      submitBtn.disabled = true;
+
+      const rows = fieldsContainer.querySelectorAll(".field-row");
+      const fields = Array.from(rows).map(row => ({
+        name: row.querySelector(".field-name").value.trim(),
+        selector: row.querySelector(".field-selector").value.trim(),
+        attribute: row.querySelector(".field-attr").value.trim() || null,
+      }));
+
+      const formData = new FormData();
+      formData.append("url", document.getElementById("url").value);
+      formData.append("fields_json", JSON.stringify(fields));
+      formData.append("format", document.getElementById("format").value);
+      const itemSel = document.getElementById("item_selector").value.trim();
+      if (itemSel) formData.append("item_selector", itemSel);
+
+      try {
+        const res = await fetch("/api/scrape", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: res.statusText }));
+          throw new Error(err.detail || "Request failed");
+        }
+
+        const blob = await res.blob();
+        const disposition = res.headers.get("Content-Disposition") || "";
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : "scrape_result";
+
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+
+        statusEl.className = "status success";
+        statusEl.textContent = `Done — downloaded ${filename}`;
+      } catch (err) {
+        statusEl.className = "status error";
+        statusEl.textContent = err.message || "Something went wrong";
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
